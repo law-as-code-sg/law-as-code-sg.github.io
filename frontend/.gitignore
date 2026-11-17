@@ -1,0 +1,9 @@
+node_modules
+.svelte-kit
+build
+.env
+.env.*
+!.env.example
+
+# Pyodide und Modell für die Rechnung im Browser (tools/build_pyodide.sh)
+static/pyodide

@@ -1,0 +1,166 @@
+// Setzt die Werte von OpenFisca in die Texte aus texte.de.json ein und
+// entscheidet, welche Texte erscheinen. Jede Bedingung entspricht dem Feld
+// «wann» in texte.de.json und prüft nur Werte, die OpenFisca liefert.
+
+import texte from '#lib/texte.de.json';
+
+export { texte };
+
+const tausender = (ganz) => ganz.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+
+const FORMATE = {
+	// 1040 → 1'040.00
+	franken: (wert) => {
+		const [ganz, rappen] = Number(wert).toFixed(2).split('.');
+		return `${tausender(ganz)}.${rappen}`;
+	},
+	// 4.125 → 4.125, 5.5 → 5.50 (Beitrag je Stunde ist nicht gerundet)
+	franken_genau: (wert) => {
+		const text = String(Number(Number(wert).toFixed(3)));
+		const [ganz, teil = ''] = text.split('.');
+		return `${tausender(ganz)}.${teil.padEnd(2, '0')}`;
+	},
+	// 0.5 → 50 %, 0.912 → 91.2 %
+	prozent: (wert) => `${Number((Number(wert) * 100).toFixed(1))} %`,
+	stunden: (wert) => String(Number(Number(wert).toFixed(2))),
+	ganzzahl: (wert) => String(Math.round(Number(wert))),
+	// 97000 → 97'000 (Einkommen ohne Rappen)
+	franken_ganz: (wert) => tausender(String(Math.round(Number(wert)))),
+	// 2028-08-01 → 1. August 2028
+	datum: (wert) => {
+		const [jahr, monat, tag] = wert.split('-');
+		return `${Number(tag)}. ${MONATE[Number(monat) - 1]} ${jahr}`;
+	}
+};
+
+const MONATE = [
+	'Januar',
+	'Februar',
+	'März',
+	'April',
+	'Mai',
+	'Juni',
+	'Juli',
+	'August',
+	'September',
+	'Oktober',
+	'November',
+	'Dezember'
+];
+
+function formatieren(name, wert) {
+	const anzeige = texte.anzeigewerte[name];
+	if (anzeige) return anzeige[wert] ?? wert;
+	const format = texte.formate.variablen[name];
+	return format && FORMATE[format] ? FORMATE[format](wert) : String(wert);
+}
+
+/** Ersetzt {name} im Text durch den formatierten Wert. */
+export function einsetzen(text, werte) {
+	return text.replace(/\{([a-z_0-9]+)\}/g, (ganz, name) =>
+		name in werte ? formatieren(name, werte[name]) : ganz
+	);
+}
+
+const fast = (a, b) => Math.abs(Number(a) - Number(b)) < 0.005;
+
+/** Welcher Ergebnistext für ein Kind gilt (texte.ergebnis). */
+export function ergebnisArt(kind) {
+	if (!kind.kibg_anspruch) return 'kein_anspruch';
+	if (Number(kind.kibg_hoechstbeitrag) === 0) return 'anspruch_ohne_ansatz';
+	if (Number(kind.kibg_beitrag_total) === 0) return 'anspruch_einkommen';
+	return 'anspruch';
+}
+
+/** Liste der Voraussetzungen mit «erfüllt» oder «nicht erfüllt». */
+export function voraussetzungen(kind, haushalt, angaben) {
+	const t = texte.voraussetzungen;
+	// `endung` wählt eine Textvariante, z. B. «_einzeln» für eine einzige
+	// erziehungsberechtigte Person.
+	const zeile = (schluessel, erfuellt, endung = '') => ({
+		artikel: t[schluessel].artikel,
+		erfuellt,
+		text: erfuellt ? t[schluessel][`erfuellt${endung}`] : t[schluessel][`nicht_erfuellt${endung}`]
+	});
+	const liste = [
+		zeile('kibg_wohnsitz_erfuellt', haushalt.kibg_wohnsitz_erfuellt),
+		zeile(
+			'kibg_beschaeftigung_lit_a_erfuellt',
+			haushalt.kibg_beschaeftigung_lit_a_erfuellt,
+			angaben.gemeinsam === true ? '' : '_einzeln'
+		)
+	];
+	if (angaben.gemeinsam === true) {
+		liste.push(
+			zeile('kibg_beschaeftigung_lit_b_erfuellt', haushalt.kibg_beschaeftigung_lit_b_erfuellt)
+		);
+	}
+	if (!haushalt.kibg_beschaeftigung_erfuellt && angaben.ausnahme === true) {
+		liste.push(zeile('kibg_ausnahme_bewilligt', true));
+	}
+	liste.push(zeile('kibg_alter_erfuellt', kind.kibg_alter_erfuellt));
+	liste.push(zeile('kibg_einrichtung_berechtigt', kind.kibg_einrichtung_berechtigt));
+	// Art. 9 Abs. 2 KiBG, Art. 25 KiBV: vor dem Beitragsbeginn kein Beitrag.
+	if (kind.kibg_beitragsbeginn) {
+		liste.push(zeile('kibg_beitragsbeginn_erreicht', kind.kibg_beitragsbeginn_erreicht));
+	}
+	// Art. 11 Abs. 2 KiBG, Art. 16 KiBV: nach dem Ende der Verfügung neues Gesuch.
+	if (kind.kibg_verfuegung_ende && kind.kibg_beitragsbeginn_erreicht) {
+		liste.push(zeile('kibg_verfuegung_laeuft', kind.kibg_verfuegung_laeuft));
+	}
+	return liste;
+}
+
+/** Schritte des Rechenwegs, die für dieses Kind gelten. */
+export function rechenweg(kind, eingabe) {
+	return texte.rechenweg.schritte.filter((schritt) => {
+		if (!schritt.wann) return true;
+		// Stundengrenze greift (Art. 14 Abs. 4 KiBV)
+		if (schritt.wann.startsWith('kibg_subventionierte_stunden')) {
+			return Number(kind.kibg_subventionierte_stunden) < Number(eingabe.stunden);
+		}
+		// Kostengrenze greift (Art. 6 Abs. 2 und Art. 20 Abs. 3 KiBG)
+		if (schritt.wann.startsWith('kibg_beitrag_total')) {
+			return fast(kind.kibg_beitrag_total, eingabe.kosten);
+		}
+		return true;
+	});
+}
+
+/** Hinweise, die für dieses Kind gelten. */
+export function hinweise(kind, haushalt, angaben, partnerEinkommenZaehlt) {
+	const h = texte.hinweise;
+	const liste = [];
+	if (kind.kibg_anspruch && kind.kibg_altersstufe === 'unter_18_monate') {
+		liste.push(h.altersgrenze_18_monate);
+	}
+	if (kind.kibg_anspruch) liste.push(h.neuberechnung_25_prozent);
+	if (!haushalt.kibg_beschaeftigung_erfuellt && angaben.ausnahme !== true) {
+		liste.push(h.entbindung_moeglich);
+	}
+	if (partnerEinkommenZaehlt === true) liste.push(h.partner_einkommen_zaehlt);
+	if (partnerEinkommenZaehlt === false) liste.push(h.partner_einkommen_zaehlt_nicht);
+	// Datumsregeln (Art. 9 Abs. 2 KiBG, Art. 25 und Art. 6 KiBV)
+	const monatsbeginn = `${angaben.monat}-01`;
+	if (
+		kind.kibg_anspruch &&
+		kind.kibg_beitragsbeginn > monatsbeginn &&
+		kind.kibg_beitragsbeginn.startsWith(angaben.monat)
+	) {
+		liste.push(h.beitragsbeginn_im_monat);
+	}
+	const uebergang = kind.kibg_gesuch_in_uebergangsfrist === true;
+	const zuSpaet = !uebergang && kind.kibg_gesuch_innert_frist === false;
+	if (uebergang) liste.push(h.uebergangsfrist);
+	else if (zuSpaet) liste.push(h.gesuch_zu_spaet);
+	if (kind.kibg_einrichtung_teilnahmebeginn && !kind.kibg_einrichtung_berechtigt) {
+		liste.push(h.teilnahme_einrichtung);
+	}
+	if (kind.kibg_anspruch) liste.push(h.verfuegung_ende);
+	if (kind.kibg_anspruch) {
+		// Nicht neben «zu spät» oder der Übergangsfrist: Dort gilt etwas anderes.
+		if (!uebergang && !zuSpaet) liste.push(h.gesuchsfrist_30_tage);
+		liste.push(h.meldepflicht);
+	}
+	return liste;
+}

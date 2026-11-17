@@ -1,0 +1,97 @@
+---
+name: Test and deploy to GitHub Pages
+
+# On every push and pull request: rulebook checks, OpenFisca tests and website
+# tests. On main, additionally: build the static website (rules run in the
+# browser via Pyodide) and publish it on https://law-as-code-sg.github.io/.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Install OpenFisca model
+        working-directory: openfisca-CH-SG
+        run: uv sync --locked --all-extras --dev
+
+      - name: Rulebook checks and OpenFisca tests
+        run: >-
+          uv run --project openfisca-CH-SG --frozen
+          pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Website tests (against the OpenFisca Web API)
+        run: |
+          (cd openfisca-CH-SG && uv run --frozen openfisca serve \
+            --country-package openfisca_ch_sg --port 5000 &)
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:5000/spec >/dev/null && break; sleep 1; done
+          cd frontend && npm ci && npm test
+
+  build:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install website dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Pyodide, Python packages and model for the browser
+        run: PYTHON=python bash tools/build_pyodide.sh
+
+      - name: Build static website
+        working-directory: frontend
+        run: npm run build
+
+      - uses: actions/configure-pages@v6.0.0
+
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: frontend/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5.0.1

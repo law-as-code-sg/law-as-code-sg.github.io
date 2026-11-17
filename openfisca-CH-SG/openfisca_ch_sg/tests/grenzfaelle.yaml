@@ -1,0 +1,1509 @@
+# Grenzfälle (G1–G51), Fälle ohne Anspruch (X1–X10), Auslegungsfälle (Q1–Q4)
+# und bekannte Einschränkung (E1) aus challenge/szenarien.md, Teile 2 bis 5.
+# Nummern wie im Katalog. Zusatzfälle stammen nicht aus dem Katalog.
+#
+# Die Anker (&p1_..., &p7_...) halten die Angaben der Personas fest; mit
+# «<<: *p1_...» wird nur geändert, was im Szenario anders ist.
+
+- name: Basis P1 unverändert (hält die Angaben für die folgenden Fälle fest)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: &p1_haushalt
+      erziehungsberechtigte: [mutter, vater]
+      kinder: [lina]
+      gemeinsamer_haushalt: true
+    persons:
+      mutter: &p1_mutter
+        kibg_gesuchstellend: true
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 1.0
+        me_steuerveranlagung: {2028: 60000}
+      vater: &p1_vater
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 0.4
+        me_steuerveranlagung: {2028: 37000}
+      lina: &p1_lina
+        geburtsdatum: 2027-09-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        kibg_einrichtungstyp: kita
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 80
+        betreuungstage_mit_obhut: 8
+        kibg_betreuungskosten: 1040
+  output: &satz_11_00
+    persons:
+      mutter:
+        kibg_einkommen_zaehlt_lit_a: true
+        kibg_einkommen_zaehlt_lit_b: false
+      vater:
+        kibg_einkommen_zaehlt_lit_a: true
+      lina:
+        kibg_hoechstbeitrag: 11.00
+        kibg_beitrag_pro_stunde: 5.50
+        kibg_mindestbeitrag: 440
+
+- name: Basis P7 unverändert (hält die Angaben für die folgenden Fälle fest)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: &p7_haushalt
+      erziehungsberechtigte: [vater]
+      partner: [partnerin]
+      kinder: [jonas]
+      gemeinsamer_haushalt: false
+      beginn_gemeinsamer_haushalt: 2026-01-01
+    persons: &p7_personen
+      vater: &p7_vater
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 0.8
+        me_steuerveranlagung: {2028: 51400}
+      partnerin: &p7_partnerin
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 1.0
+        me_steuerveranlagung: {2028: 45600}
+      jonas: &p7_jonas
+        geburtsdatum: 2024-09-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        kibg_einrichtungstyp: kita
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 72
+        betreuungstage_mit_obhut: 8
+        kibg_betreuungskosten: 864
+  output: &p7_ergebnis
+    persons:
+      vater:
+        kibg_einkommen_zaehlt_lit_a: false
+        kibg_einkommen_zaehlt_lit_b: true
+      partnerin:
+        kibg_einkommen_zaehlt_lit_b: true
+      jonas:
+        kibg_anspruch: true
+        kibg_beitrag_total: 270
+
+# --- Einkommen (Art. 15 und Anhang KiBV): ganzes Einkommen bei der Mutter ----
+
+- name: G1 Einkommen 39'999, Faktor auf 1 begrenzt (Art. 15 Abs. 1 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 39999}
+      vater: &vater_ohne_einkommen
+        <<: *p1_vater
+        me_steuerveranlagung: {2028: 0}
+      lina: *p1_lina
+  output: &voller_beitrag
+    household:
+      kibg_einkommensfaktor: 1
+    persons:
+      lina:
+        kibg_beitrag_pro_stunde: 11.00
+        kibg_mindestbeitrag: 880
+
+- name: G2 Einkommen 40'000, voller Beitrag (Art. 15 Abs. 1 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 40000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output: *voller_beitrag
+
+- name: G3 Einkommen 68'500, Faktor 0.75 (Anhang KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 68500}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    household:
+      kibg_einkommensfaktor: 0.75
+    persons:
+      lina:
+        kibg_beitrag_pro_stunde: 8.25
+        kibg_mindestbeitrag: 660
+
+- name: G4 Einkommen 125'500, Faktor 0.25 (Anhang KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 125500}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    household:
+      kibg_einkommensfaktor: 0.25
+    persons:
+      lina:
+        kibg_beitrag_pro_stunde: 2.75
+        kibg_mindestbeitrag: 220
+
+- name: G5 Einkommen 154'000, Faktor 0, Anspruch bleibt (Art. 15 Abs. 2 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 154000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    household:
+      kibg_einkommensfaktor: 0
+    persons:
+      lina:
+        kibg_anspruch: true
+        kibg_beitrag_pro_stunde: 0
+        kibg_mindestbeitrag: 0
+
+- name: G6 Einkommen 154'001, Faktor auf 0 begrenzt, nicht negativ (Art. 15 Abs. 2 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 154001}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    household:
+      kibg_einkommensfaktor: 0
+    persons:
+      lina:
+        kibg_beitrag_pro_stunde: 0
+        kibg_mindestbeitrag: 0
+
+# --- Altersstufe und Einrichtungstyp (Art. 14 Abs. 1 bis 3 KiBV) -------------
+
+- name: G7 Kind noch keine 18 Monate alt, höherer Ansatz (Art. 14 Abs. 1 KiBV, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2027-03-02
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+  output: *satz_11_00
+
+- name: G8 Kind über 18 Monate, tieferer Ansatz (Art. 14 Abs. 2 KiBV, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2027-02-28
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+  output:
+    persons:
+      lina:
+        kibg_hoechstbeitrag: 7.50
+        kibg_beitrag_pro_stunde: 3.75
+        kibg_mindestbeitrag: 300
+
+- name: G9 Tagesfamilie, 12 Monate (Art. 14 Abs. 1 lit. b KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_einrichtungstyp: tagesfamilie
+  output:
+    persons:
+      lina:
+        kibg_hoechstbeitrag: 8.30
+        kibg_beitrag_pro_stunde: 4.15
+        kibg_mindestbeitrag: 332
+
+- name: G10 Tagesfamilie, 30 Monate (Art. 14 Abs. 2 lit. b KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_einrichtungstyp: tagesfamilie
+        geburtsdatum: 2026-03-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+  output: &satz_5_50
+    persons:
+      lina:
+        kibg_hoechstbeitrag: 5.50
+        kibg_beitrag_pro_stunde: 2.75
+        kibg_mindestbeitrag: 220
+
+- name: G11 Kita, eingeschult (Art. 14 Abs. 3 lit. a KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2022-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+  output:
+    persons:
+      lina:
+        kibg_hoechstbeitrag: 7.50
+        kibg_beitrag_pro_stunde: 3.75
+        kibg_mindestbeitrag: 300
+
+- name: G12 Schulergänzende Betreuung, eingeschult (Art. 14 Abs. 3 lit. b KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2022-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+        kibg_einrichtungstyp: schulergaenzend
+  output: *satz_5_50
+
+- name: G13 Tagesfamilie, eingeschult (Art. 14 Abs. 3 lit. c KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2022-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+        kibg_einrichtungstyp: tagesfamilie
+  output: *satz_5_50
+
+- name: G14 Kindergartenkind in schulergänzender Betreuung gilt als eingeschult (Art. 14 Abs. 3 lit. b KiBV, A8)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2023-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+        kibg_einrichtungstyp: schulergaenzend
+  output: *satz_5_50
+
+# --- Mindestalter (Art. 4 Abs. 3 KiBG) ---------------------------------------
+
+- name: G15 Genau 3 Monate alt, Anspruch (Art. 4 Abs. 3 KiBG, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2028-06-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+  output:
+    persons:
+      lina:
+        kibg_alter_erfuellt: true
+        kibg_beitrag_total: 440
+
+- name: G16 Noch keine 3 Monate alt, kein Anspruch (Art. 4 Abs. 3 KiBG, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina: &lina_juni
+        <<: *p1_lina
+        geburtsdatum: 2028-06-02
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+  output:
+    persons:
+      lina:
+        kibg_alter_erfuellt: false
+        kibg_beitrag_total: 0
+        kibg_restkosten_eltern: 1040
+
+- name: G17 Wie G16 im Monat 2028-10, jetzt 3 Monate alt (Art. 4 Abs. 3 KiBG, A1)
+  period: 2028-10
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina: *lina_juni
+  output:
+    persons:
+      lina:
+        kibg_alter_erfuellt: true
+        kibg_beitrag_total: 440
+
+# --- Stunden (Art. 14 Abs. 4 KiBV) -------------------------------------------
+
+- name: G18 120 Stunden an 10 Tagen, genau an der Grenze (Art. 14 Abs. 4 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        betreuungstage_mit_obhut: 10
+        betreuungsstunden: 120
+        kibg_betreuungskosten: 1560
+  output:
+    persons:
+      lina:
+        kibg_subventionierte_stunden: 120
+        kibg_mindestbeitrag: 660
+        kibg_restkosten_eltern: 900
+
+- name: G19 130 Stunden an 10 Tagen, nur 120 subventioniert (Art. 14 Abs. 4 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        betreuungstage_mit_obhut: 10
+        betreuungsstunden: 130
+        kibg_betreuungskosten: 1690
+  output:
+    persons:
+      lina:
+        kibg_subventionierte_stunden: 120
+        kibg_mindestbeitrag: 660
+        kibg_restkosten_eltern: 1030
+
+- name: G20 Keine Betreuung im Monat, Anspruch bleibt, Beitrag 0 (Art. 14 Abs. 4 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        betreuungstage_mit_obhut: 0
+        betreuungsstunden: 0
+        kibg_betreuungskosten: 0
+  output:
+    persons:
+      lina:
+        kibg_anspruch: true
+        kibg_subventionierte_stunden: 0
+        kibg_mindestbeitrag: 0
+        kibg_restkosten_eltern: 0
+
+# --- Kosten (Art. 6 Abs. 2 und Art. 20 Abs. 3 KiBG) --------------------------
+
+- name: G21 Kosten genau so hoch wie der Beitrag (Art. 6 Abs. 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_betreuungskosten: 440
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 440
+        kibg_zusatzbeitrag: 0
+        kibg_restkosten_eltern: 0
+        kibg_anteil_kanton: 220
+        kibg_anteil_gemeinde: 220
+
+- name: G22 Kosten tiefer als der Beitrag (Art. 6 Abs. 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_betreuungskosten: 400
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 400
+        kibg_zusatzbeitrag: 0
+        kibg_restkosten_eltern: 0
+        kibg_anteil_kanton: 200
+        kibg_anteil_gemeinde: 200
+
+- name: G23 Kosten 0, z. B. gratis Angebot der Gemeinde (Art. 6 Abs. 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_betreuungskosten: 0
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 0
+        kibg_zusatzbeitrag: 0
+        kibg_restkosten_eltern: 0
+        kibg_anteil_kanton: 0
+        kibg_anteil_gemeinde: 0
+
+- name: G24 Wie P6 mit Zusatzbeiträgen, kein Platz mehr unter den Kosten (Art. 20 Abs. 3 KiBG, A2)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      erziehungsberechtigte: [vater]
+      kinder: [sara]
+      gemeinsamer_haushalt: false
+      kibg_zusatzbeitrag_z1: 2.00
+      kibg_zusatzbeitrag_z2: 1.00
+    persons:
+      vater:
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 0.6
+        me_steuerveranlagung: {2028: 40000}
+      sara:
+        geburtsdatum: 2028-01-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        kibg_einrichtungstyp: kita
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 100
+        betreuungstage_mit_obhut: 10
+        kibg_betreuungskosten: 900
+  output:
+    persons:
+      sara:
+        kibg_mindestbeitrag: 900
+        kibg_zusatzbeitrag: 0
+        kibg_restkosten_eltern: 0
+        kibg_anteil_kanton: 450
+        kibg_anteil_gemeinde: 450
+
+# --- Rundung auf 5 Rappen (A4) -----------------------------------------------
+
+- name: G25 802.807 wird auf 802.80 abgerundet (A4)
+  period: 2028-09
+  absolute_error_margin: 0.001
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: &mutter_50000
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 50000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 802.80
+        kibg_zusatzbeitrag: 0
+        kibg_anteil_kanton: 401.40
+        kibg_anteil_gemeinde: 401.40
+        kibg_restkosten_eltern: 237.20
+
+- name: G26 710.175 wird auf 710.20 aufgerundet (A4)
+  period: 2028-09
+  absolute_error_margin: 0.001
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 62000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 710.20
+        kibg_zusatzbeitrag: 0
+        kibg_anteil_kanton: 355.10
+        kibg_anteil_gemeinde: 355.10
+        kibg_restkosten_eltern: 329.80
+
+- name: G27 Kantonsanteil 274.025 wird auf 274.05 aufgerundet, die Gemeinde erhält den Rest (A4)
+  period: 2028-09
+  absolute_error_margin: 0.001
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 83000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 548.05
+        kibg_zusatzbeitrag: 0
+        kibg_anteil_kanton: 274.05
+        kibg_anteil_gemeinde: 274.00
+        kibg_restkosten_eltern: 491.95
+
+- name: G28 Erst runden, dann auf die Kosten von 802.78 begrenzen (A4)
+  period: 2028-09
+  absolute_error_margin: 0.001
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *mutter_50000
+      vater: *vater_ohne_einkommen
+      lina:
+        <<: *p1_lina
+        kibg_betreuungskosten: 802.78
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 802.78
+        kibg_zusatzbeitrag: 0
+        kibg_anteil_kanton: 401.40
+        kibg_anteil_gemeinde: 401.38
+        kibg_restkosten_eltern: 0
+
+- name: G29 Mindest- und Zusatzbeitrag je auf 5 Rappen gerundet (A4)
+  period: 2028-09
+  absolute_error_margin: 0.001
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_zusatzbeitrag_z1: 2.00
+      kibg_zusatzbeitrag_z2: 1.00
+    persons:
+      mutter: *mutter_50000
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 802.80
+        kibg_zusatzbeitrag: 225.95
+        kibg_anteil_kanton: 401.40
+        kibg_anteil_gemeinde: 627.35
+        kibg_restkosten_eltern: 11.25
+
+# --- Beschäftigungsgrad und Ausnahme (Art. 4 Abs. 1 und 2 KiBG, Art. 12 KiBV)
+
+- name: G30 Mutter allein mit 20 %, Anspruch (Art. 4 Abs. 1 lit. a KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: &mutter_allein
+      erziehungsberechtigte: [mutter]
+      kinder: [lina]
+      gemeinsamer_haushalt: false
+    persons:
+      mutter:
+        <<: *p1_mutter
+        beschaeftigungsgrad: 0.2
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: true
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: true
+    persons:
+      lina:
+        kibg_anspruch: true
+
+- name: G31 Mutter allein mit 19 %, kein Anspruch (Art. 4 Abs. 1 lit. a KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *mutter_allein
+    persons:
+      mutter:
+        <<: *p1_mutter
+        beschaeftigungsgrad: 0.19
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: false
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      lina:
+        kibg_anspruch: false
+
+- name: G32 Paar mit 100 % und 20 %, zusammen 120 % (Art. 4 Abs. 1 lit. b KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater:
+        <<: *p1_vater
+        beschaeftigungsgrad: 0.2
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: true
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: true
+    persons:
+      lina:
+        kibg_anspruch: true
+
+- name: G33 Paar mit 100 % und 19 %, zusammen 119 % (Art. 4 Abs. 1 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater:
+        <<: *p1_vater
+        beschaeftigungsgrad: 0.19
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: false
+      kibg_beschaeftigung_lit_b_erfuellt: false
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      lina:
+        kibg_anspruch: false
+
+- name: G34 Paar mit 60 % und 60 % (Art. 4 Abs. 1 lit. b KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        beschaeftigungsgrad: 0.6
+      vater:
+        <<: *p1_vater
+        beschaeftigungsgrad: 0.6
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: true
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: true
+    persons:
+      lina:
+        kibg_anspruch: true
+
+- name: G35 Paar mit 110 % und 10 %, Vater unter 20 % (Art. 4 Abs. 1 KiBG, Entscheid O3)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        beschaeftigungsgrad: 1.1
+      vater:
+        <<: *p1_vater
+        beschaeftigungsgrad: 0.1
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: false
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      lina:
+        kibg_anspruch: false
+
+- name: G36 Paar mit 100 % und 0 %, Ausnahme bewilligt (Art. 4 Abs. 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_ausnahme_bewilligt: true
+    persons:
+      mutter: *p1_mutter
+      vater: &vater_null_prozent
+        <<: *p1_vater
+        beschaeftigungsgrad: 0
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: false
+      kibg_beschaeftigung_lit_b_erfuellt: false
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      lina:
+        kibg_anspruch: true
+
+- name: G37 Wie P2, Mutter 0 % auf Stellensuche, Ausnahme bewilligt (Art. 4 Abs. 2 KiBG, Art. 12 lit. a KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      erziehungsberechtigte: [mutter]
+      kinder: [noah]
+      gemeinsamer_haushalt: false
+      kibg_ausnahme_bewilligt: true
+      kibg_ausnahmegrund: berufliche_integration
+    persons:
+      mutter:
+        kibg_gesuchstellend: true
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 0
+        me_steuerveranlagung: {2028: 30000}
+      noah:
+        geburtsdatum: 2026-03-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        kibg_einrichtungstyp: tagesfamilie
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 108
+        betreuungstage_mit_obhut: 12
+        kibg_betreuungskosten: 1134
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: false
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      noah:
+        kibg_anspruch: true
+        kibg_beitrag_total: 594
+
+- name: G38 Wie P7, Partnerin 0 %, nur der Vater zählt für das Pensum (Art. 4 Abs. 1 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p7_haushalt
+    persons:
+      vater: *p7_vater
+      partnerin:
+        <<: *p7_partnerin
+        beschaeftigungsgrad: 0
+      jonas: *p7_jonas
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: true
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: true
+    persons:
+      jonas:
+        kibg_anspruch: true
+        kibg_beitrag_total: 270
+
+# --- Zusatzbeiträge (Art. 20 KiBG, Art. 24 KiBV) -----------------------------
+
+- name: G39 Einkommen 160'000, nur Z1, der mit F = 0 multipliziert wird (Anhang KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_zusatzbeitrag_z1: 2.00
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 160000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 0
+        kibg_zusatzbeitrag: 0
+
+# --- Massgebendes Einkommen und Haushalt (Art. 8 KiBV) -----------------------
+
+- name: G40 Eltern im gemeinsamen Haushalt erst seit kurzem, beide Einkommen zählen (Art. 8 Abs. 1 lit. a KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      verheiratet_oder_eingetragen: false
+      beginn_gemeinsamer_haushalt: 2028-03-01
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina: *p1_lina
+  output:
+    household:
+      kibg_massgebendes_einkommen: 97000
+
+- name: G41 Konkubinat seit genau 2 Jahren, gefestigt (Art. 8 Abs. 2 lit. b KiBV, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p7_haushalt
+      beginn_gemeinsamer_haushalt: 2026-09-01
+    persons: *p7_personen
+  output:
+    household:
+      kibg_gefestigte_lebensgemeinschaft: true
+      kibg_massgebendes_einkommen: 97000
+
+- name: G42 Konkubinat einen Tag zu kurz, nicht gefestigt (Art. 8 Abs. 2 lit. b KiBV, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p7_haushalt
+      beginn_gemeinsamer_haushalt: 2026-09-02
+    persons: *p7_personen
+  output:
+    household:
+      kibg_gefestigte_lebensgemeinschaft: false
+      kibg_massgebendes_einkommen: 51400
+
+- name: G43 Verheiratet seit kurzem, Dauer egal (Art. 8 Abs. 2 lit. a KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p7_haushalt
+      verheiratet_oder_eingetragen: true
+      beginn_gemeinsamer_haushalt: 2028-05-01
+    persons: *p7_personen
+  output:
+    household:
+      kibg_gefestigte_lebensgemeinschaft: true
+      kibg_massgebendes_einkommen: 97000
+
+# G44: Die Mutter wohnt ausserhalb des Kantons. Sie gehört nicht zum Haushalt
+# des gesuchstellenden Vaters und wird im Modell nicht erfasst (Entscheid O8);
+# das Ergebnis ist deshalb dasselbe wie bei P7.
+- name: G44 Wie P7, die Mutter des Kindes wohnt ausserhalb des Kantons (Art. 4 Abs. 1 KiBG, Entscheid O8)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p7_haushalt
+    persons: *p7_personen
+  output:
+    household:
+      kibg_gefestigte_lebensgemeinschaft: true
+      kibg_massgebendes_einkommen: 97000
+    persons:
+      jonas:
+        kibg_anspruch: true
+
+# --- Aktuelle Gegebenheiten (Art. 5 Abs. 4 KiBG, Art. 11 KiBV) ---------------
+
+- name: G45 Aktuelles Einkommen 25 % tiefer, mit Antrag (Art. 11 Abs. 2 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: &antrag_mutter_allein
+      <<: *mutter_allein
+      kibg_antrag_aktuelle_gegebenheiten: {2028: true}
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 100000}
+        me_aktuell: {2028: 75000}
+      lina: *p1_lina
+  output:
+    household:
+      kibg_me_steuerveranlagung_haushalt: 100000
+      kibg_me_aktuell_haushalt: 75000
+      kibg_abweichung_wesentlich: true
+      kibg_massgebendes_einkommen: 75000
+
+- name: G46 Aktuelles Einkommen nur 24 % tiefer, Steuerveranlagung gilt (Art. 11 Abs. 2 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *antrag_mutter_allein
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 100000}
+        me_aktuell: {2028: 76000}
+      lina: *p1_lina
+  output:
+    household:
+      kibg_me_aktuell_haushalt: 76000
+      kibg_abweichung_wesentlich: false
+      kibg_massgebendes_einkommen: 100000
+
+- name: G47 Aktuelles Einkommen 30 % tiefer, aber ohne Antrag (Art. 11 Abs. 1 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *mutter_allein
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 100000}
+        me_aktuell: {2028: 70000}
+      lina: *p1_lina
+  output:
+    household:
+      # Die Abweichung ist erreicht, zählt aber ohne Antrag nicht (Art. 11 Abs. 1 KiBV).
+      kibg_abweichung_wesentlich: true
+      kibg_massgebendes_einkommen: 100000
+
+- name: G48 Paar, Abweichung von 25 % beim Einkommen des Haushalts (Art. 11 Abs. 2 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_antrag_aktuelle_gegebenheiten: {2028: true}
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 60000}
+        me_aktuell: {2028: 60000}
+      vater:
+        <<: *p1_vater
+        me_steuerveranlagung: {2028: 40000}
+        me_aktuell: {2028: 15000}
+      lina: *p1_lina
+  output:
+    household:
+      kibg_me_steuerveranlagung_haushalt: 100000
+      kibg_me_aktuell_haushalt: 75000
+      kibg_abweichung_wesentlich: true
+      kibg_massgebendes_einkommen: 75000
+
+# --- Mehrere Kinder und Perioden ---------------------------------------------
+
+- name: G49 Wie P3, Mia erst 2 Monate alt, Leo unverändert (Art. 4 Abs. 3 KiBG, A1)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      erziehungsberechtigte: [mutter, vater]
+      kinder: [mia, leo]
+      gemeinsamer_haushalt: true
+    persons:
+      mutter:
+        kibg_gesuchstellend: true
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 0.8
+        me_steuerveranlagung: {2028: 40000}
+      vater:
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 0.6
+        me_steuerveranlagung: {2028: 28500}
+      mia:
+        geburtsdatum: 2028-07-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        kibg_einrichtungstyp: kita
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 120
+        betreuungstage_mit_obhut: 12
+        kibg_betreuungskosten: 1500
+      leo:
+        geburtsdatum: 2021-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+        kibg_einrichtungstyp: schulergaenzend
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 48
+        betreuungstage_mit_obhut: 16
+        kibg_betreuungskosten: 432
+  output:
+    persons:
+      mia:
+        kibg_anspruch: false
+        kibg_beitrag_total: 0
+        kibg_restkosten_eltern: 1500
+      leo:
+        kibg_beitrag_total: 198
+
+- name: G50 P1 im ersten Monat nach Vollzugsbeginn (Platzhalter 2028-08-01)
+  period: 2028-08
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_alter_monate: 11
+        kibg_beitrag_total: 440
+
+- name: G51 P4 im Monat 2029-01 mit gleichem Einkommen für 2029 (A1)
+  period: 2029-01
+  absolute_error_margin: 0.01
+  input:
+    household:
+      erziehungsberechtigte: [mutter, vater]
+      kinder: [elias]
+      gemeinsamer_haushalt: true
+    persons:
+      mutter:
+        kibg_gesuchstellend: true
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 1.0
+        me_steuerveranlagung: {2029: 70000}
+      vater:
+        wohnsitz_kanton_sg: true
+        beschaeftigungsgrad: 1.0
+        me_steuerveranlagung: {2029: 55500}
+      elias:
+        geburtsdatum: 2026-09-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        kibg_einrichtungstyp: kita
+        kibg_einrichtung_anerkannt: true
+        kibg_einrichtung_angemeldet: true
+        betreuungsstunden: 200
+        betreuungstage_mit_obhut: 20
+        kibg_betreuungskosten: 2800
+  output:
+    persons:
+      elias:
+        kibg_alter_monate: 28
+        kibg_beitrag_total: 375
+
+# --- Kein Anspruch (Teil 3): Beiträge 0, Restkosten = volle Kosten -----------
+
+- name: G52 Paar, Vater wohnt ausserhalb, die Mutter stellt das Gesuch (Art. 4 Abs. 1 KiBG, O8)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater:
+        <<: *p1_vater
+        wohnsitz_kanton_sg: false
+      lina: *p1_lina
+  output:
+    household:
+      kibg_wohnsitz_erfuellt: true
+    persons:
+      lina:
+        kibg_anspruch: true
+        kibg_beitrag_total: 440
+
+- name: G53 Paar, Vater wohnt ausserhalb und stellt das Gesuch (Art. 4 Abs. 1 KiBG, O8)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        kibg_gesuchstellend: false
+      vater:
+        <<: *p1_vater
+        wohnsitz_kanton_sg: false
+        kibg_gesuchstellend: true
+      lina: *p1_lina
+  output:
+    household:
+      kibg_wohnsitz_erfuellt: false
+    persons:
+      mutter:
+        kibg_gesuchsteller: false
+      vater:
+        kibg_gesuchsteller: true
+      lina:
+        kibg_anspruch: false
+        kibg_beitrag_total: 0
+        kibg_restkosten_eltern: 1040
+
+- name: X1 Beide Eltern wohnen ausserhalb des Kantons (Art. 4 Abs. 1 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: &mutter_ausserhalb
+        <<: *p1_mutter
+        wohnsitz_kanton_sg: false
+      vater:
+        <<: *p1_vater
+        wohnsitz_kanton_sg: false
+      lina: *p1_lina
+  output: &kein_anspruch
+    persons:
+      lina:
+        kibg_anspruch: false
+        kibg_beitrag_pro_stunde: 0
+        kibg_mindestbeitrag: 0
+        kibg_zusatzbeitrag: 0
+        kibg_beitrag_total: 0
+        kibg_restkosten_eltern: 1040
+        kibg_anteil_kanton: 0
+        kibg_anteil_gemeinde: 0
+
+- name: X2 Einrichtung nicht angemeldet (Art. 3 Abs. 3 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_einrichtung_angemeldet: false
+  output: *kein_anspruch
+
+- name: X3 Einrichtung nicht anerkannt (Art. 3 Abs. 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_einrichtung_anerkannt: false
+  output: *kein_anspruch
+
+- name: X4 Keine anerkannte Einrichtung, z. B. private Nanny (Art. 3 Abs. 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        kibg_einrichtungstyp: keine
+  output: *kein_anspruch
+
+- name: X5 Primarschule abgeschlossen (Art. 4 Abs. 3 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2016-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+        primarschule_abgeschlossen: true
+  output: *kein_anspruch
+
+- name: X6 Paar mit 100 % und 0 %, keine Ausnahme (Art. 4 Abs. 1 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *vater_null_prozent
+      lina: *p1_lina
+  output: *kein_anspruch
+
+- name: X7 Ausnahmegrund erfasst, Ausnahme aber nicht bewilligt (Art. 4 Abs. 2 KiBG, Art. 12 KiBV)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_ausnahmegrund: familiaere_belastung
+      kibg_ausnahme_bewilligt: false
+    persons:
+      mutter: *p1_mutter
+      vater: *vater_null_prozent
+      lina: *p1_lina
+  output: *kein_anspruch
+
+- name: X8 Ausnahme bewilligt, aber beide Eltern ausserhalb des Kantons (Art. 4 Abs. 1 und 2 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_ausnahme_bewilligt: true
+    persons:
+      mutter: *mutter_ausserhalb
+      vater:
+        <<: *vater_null_prozent
+        wohnsitz_kanton_sg: false
+      lina: *p1_lina
+  output: *kein_anspruch
+
+- name: X9 Wie P7, der gesuchstellende Vater wohnt ausserhalb des Kantons (Art. 4 Abs. 1 KiBG, Entscheid O8)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p7_haushalt
+    persons:
+      vater:
+        <<: *p7_vater
+        wohnsitz_kanton_sg: false
+      partnerin: *p7_partnerin
+      jonas: *p7_jonas
+  output:
+    persons:
+      jonas:
+        kibg_anspruch: false
+        kibg_beitrag_pro_stunde: 0
+        kibg_mindestbeitrag: 0
+        kibg_zusatzbeitrag: 0
+        kibg_beitrag_total: 0
+        kibg_restkosten_eltern: 864
+        kibg_anteil_kanton: 0
+        kibg_anteil_gemeinde: 0
+
+- name: X10 Monat vor dem Vollzugsbeginn, das Gesetz gilt noch nicht (Entscheid O1)
+  period: 2028-07
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina: *p1_lina
+  output: *kein_anspruch
+
+# --- Auslegungsfälle (Teil 4) ------------------------------------------------
+
+- name: Q1 Kind genau 18 Monate, tieferer Ansatz ab dem 18-Monate-Geburtstag (Art. 14 KiBV, O2)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2027-03-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+  output:
+    persons:
+      lina:
+        kibg_alter_monate: 18
+        kibg_hoechstbeitrag: 7.50
+        kibg_mindestbeitrag: 300
+
+- name: Q2 Paar mit 120 % und 0 %, lit. a und b kumulativ (Art. 4 Abs. 1 KiBG, O3)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        beschaeftigungsgrad: 1.2
+      vater: *vater_null_prozent
+      lina: *p1_lina
+  output:
+    household:
+      kibg_beschaeftigung_lit_a_erfuellt: false
+      kibg_beschaeftigung_lit_b_erfuellt: true
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      lina:
+        kibg_anspruch: false
+
+- name: Q3 Einkommen 160'000 mit Z2, Z2 gilt auch über 154'000 (Art. 15 Abs. 2 und Art. 24 KiBV, O4)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      <<: *p1_haushalt
+      kibg_zusatzbeitrag_z2: 1.00
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 160000}
+      vater: *vater_ohne_einkommen
+      lina: *p1_lina
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 0
+        kibg_zusatzbeitrag: 80
+        kibg_beitrag_total: 80
+        kibg_anteil_gemeinde: 80
+        kibg_restkosten_eltern: 960
+
+- name: Q4 Aktuelles Einkommen 30 % höher, Abweichung zählt in beide Richtungen (Art. 11 KiBV, O12)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *antrag_mutter_allein
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 100000}
+        me_aktuell: {2028: 130000}
+      lina: *p1_lina
+  output:
+    household:
+      kibg_massgebendes_einkommen: 130000
+
+# --- Bekannte Einschränkung (Teil 5) -----------------------------------------
+
+- name: E1 Sechs Tage pro Woche, die Grenze von 5 Tagen wird bewusst nicht geprüft (A3)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        betreuungstage_mit_obhut: 26
+        betreuungsstunden: 260
+        kibg_betreuungskosten: 3380
+  output:
+    persons:
+      lina:
+        # Nach Gesetz wären es rund 216.7 Stunden und 1'191.65; siehe A3.
+        kibg_subventionierte_stunden: 260
+        kibg_mindestbeitrag: 1430
+
+# --- Zusatzfälle (nicht im Katalog) ------------------------------------------
+
+- name: Zusatzfall Haushalt ohne erziehungsberechtigte Person, kein Anspruch (Art. 4 Abs. 1 KiBG)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household:
+      kinder: [lina]
+    persons:
+      lina: *p1_lina
+  output:
+    household:
+      kibg_wohnsitz_erfuellt: false
+      kibg_beschaeftigung_erfuellt: false
+    persons:
+      lina:
+        kibg_anspruch: false
+        kibg_beitrag_total: 0
+
+- name: Zusatzfall Kantonsanteil über 1000 Franken, 1000.025 wird auf 1000.05 aufgerundet (A4)
+  period: 2028-09
+  absolute_error_margin: 0.001
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter:
+        <<: *p1_mutter
+        me_steuerveranlagung: {2028: 40000}
+      vater: *vater_ohne_einkommen
+      lina:
+        <<: *p1_lina
+        betreuungstage_mit_obhut: 20
+        betreuungsstunden: 200
+        kibg_betreuungskosten: 2000.05
+  output:
+    persons:
+      lina:
+        kibg_mindestbeitrag: 2000.05
+        kibg_anteil_kanton: 1000.05
+        kibg_anteil_gemeinde: 1000.00
+        kibg_restkosten_eltern: 0
+
+- name: Zusatzfall Sonderschule, eingeschult, Ansatz der schulergänzenden Betreuung (Art. 3 Abs. 2 lit. d KiBG, O11)
+  period: 2028-09
+  absolute_error_margin: 0.01
+  input:
+    household: *p1_haushalt
+    persons:
+      mutter: *p1_mutter
+      vater: *p1_vater
+      lina:
+        <<: *p1_lina
+        geburtsdatum: 2022-05-01
+        betreuungsbeginn: 2028-08-01
+        kibg_gesuchsdatum: 2028-08-15
+        eingeschult: true
+        kibg_einrichtungstyp: sonderschule
+  output: *satz_5_50

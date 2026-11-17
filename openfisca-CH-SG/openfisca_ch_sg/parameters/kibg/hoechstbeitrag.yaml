@@ -1,0 +1,78 @@
+description: >-
+  Höchster Beitrag je Kind und Betreuungsstunde (MaxV), Art. 14 KiBV (Entwurf).
+  Alle Beträge in Franken je Kind und Betreuungsstunde.
+altersgrenze_monate:
+  description: >-
+    Grenze zwischen «unter 18 Monaten» (Abs. 1) und «über 18 Monaten» (Abs. 2).
+    Entscheid O2: Der Ansatz nach Abs. 1 gilt die vollen ersten 18
+    Lebensmonate, der Ansatz nach Abs. 2 ab dem 18-Monate-Geburtstag.
+  metadata:
+    unit: month
+    reference: Art. 14 Abs. 1 und 2 KiBV (Entwurf)
+  values:
+    2028-08-01:
+      value: 18
+unter_18_monate:
+  description: Der höchste Beitrag für Kinder unter 18 Monaten
+  kita:
+    description: Fr. 11.00 je Kind und Betreuungsstunde in Kindertagesstätten
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 1 lit. a KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 11.00
+  tagesfamilie:
+    description: Fr. 8.30 je Kind und Betreuungsstunde in Tagesfamilien
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 1 lit. b KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 8.30
+ueber_18_monate:
+  description: Der höchste Beitrag für Kinder über 18 Monaten bis zur Einschulung
+  kita:
+    description: Fr. 7.50 je Kind und Betreuungsstunde in Kindertagesstätten
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 2 lit. a KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 7.50
+  tagesfamilie:
+    description: Fr. 5.50 je Kind und Betreuungsstunde in Tagesfamilien
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 2 lit. b KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 5.50
+eingeschult:
+  description: Der höchste Beitrag für eingeschulte Kinder bis zum Ende der Primarstufe
+  kita:
+    description: Fr. 7.50 je Kind und Betreuungsstunde in Kindertagesstätten
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 3 lit. a KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 7.50
+  schulergaenzend:
+    description: >-
+      Fr. 5.50 je Kind und Betreuungsstunde in Einrichtungen für
+      schulergänzende Betreuung
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 3 lit. b KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 5.50
+  tagesfamilie:
+    description: Fr. 5.50 je Kind und Betreuungsstunde in Tagesfamilien
+    metadata:
+      unit: currency-CHF
+      reference: Art. 14 Abs. 3 lit. c KiBV (Entwurf)
+    values:
+      2028-08-01:
+        value: 5.50

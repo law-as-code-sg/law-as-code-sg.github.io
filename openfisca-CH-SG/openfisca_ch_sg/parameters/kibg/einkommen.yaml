@@ -1,0 +1,41 @@
+description: Massgebendes Einkommen und Vermögen (Art. 8 bis 11 und 15 KiBV, Entwurf)
+min:
+  description: >-
+    Das kleinste massgebende Einkommen und Vermögen (MinmE) liegt bei
+    Fr. 40'000.–. Erziehungsberechtigte mit einem massgebenden Einkommen und
+    Vermögen bis Fr. 40'000.– erhalten den maximalen Beitrag.
+  metadata:
+    unit: currency-CHF
+    reference: Art. 15 Abs. 1 KiBV (Entwurf)
+  values:
+    2028-08-01:
+      value: 40000
+max:
+  description: >-
+    Das höchste massgebende Einkommen und Vermögen (MaxmE) liegt bei
+    Fr. 154'000.–. Erziehungsberechtigte mit einem massgebenden Einkommen und
+    Vermögen über Fr. 154'000.– erhalten keinen Beitrag. (Auslegung O4: Das
+    gilt für den Mindestbeitrag; der einkommensunabhängige Zusatzbeitrag Z2
+    der Gemeinde wird auch darüber ausgerichtet.)
+  metadata:
+    unit: currency-CHF
+    reference: Art. 15 Abs. 2 KiBV (Entwurf)
+  values:
+    2028-08-01:
+      value: 154000
+schwelle_abweichung:
+  description: Mindestabweichung für die Bemessung nach aktuellen Gegebenheiten
+  metadata:
+    unit: /1
+    reference: Art. 11 Abs. 2 KiBV (Entwurf)
+  values:
+    2028-08-01:
+      value: 0.25
+mindestdauer_konkubinat_jahre:
+  description: Mindestdauer des gemeinsamen Haushalts für eine gefestigte Lebensgemeinschaft (Konkubinat)
+  metadata:
+    unit: year
+    reference: Art. 8 Abs. 2 lit. b KiBV (Entwurf)
+  values:
+    2028-08-01:
+      value: 2

@@ -6,7 +6,7 @@ Website: https://law-as-code-sg.github.io/
 
 The legal rules are written a second time as program code ([OpenFisca](https://openfisca.org)), tested against cases worked out by hand from the legal text, and presented on a website that explains each result with the articles behind it. The website is static: OpenFisca runs in the browser through [Pyodide](https://pyodide.org) (Python compiled to WebAssembly). There is no server, and the data entered never leaves the browser.
 
-> This is an independent prototype, not an official service of the Canton of St. Gallen. Results are estimates without legal effect.
+> **Student project, test version.** This is a closed demonstrator built by the student team Ctrl+Alt+Elite at the [Legal Hackathon](https://legalhackathons.org/) of the University of St. Gallen. The website shows the logos of [legalhackathons.org](https://legalhackathons.org/) and the [Future Society Hub](https://futuresociety.ch/). It is not an official service of the Canton of St. Gallen and is not endorsed by it. Results are estimates without legal effect.
 
 ## Applications
 

@@ -70,6 +70,12 @@
     "ueberblick": "Überblick",
     "gesetzgebung": "Gesetzgebung"
   },
+  "projekt": {
+    "label": "Testversion · Studentisches Projekt",
+    "hinweis": "Testversion (geschlossener Demonstrator) eines studentischen Projekts. Kein offizielles Angebot des Kantons St. Gallen und von ihm weder herausgegeben noch unterstützt. Ergebnisse sind unverbindliche Schätzungen ohne Rechtswirkung.",
+    "herkunft": "Entwickelt vom studentischen Team Ctrl+Alt+Elite am Legal Hackathon 2026 der Universität St. Gallen (legalhackathons.org).",
+    "logos": "Legal Hackathon und Future Society Hub"
+  },
   "formular": {
     "einleitung": "Schätzen Sie den Beitrag des Kantons und Ihrer Gemeinde an die Kosten der familien- und schulergänzenden Kinderbetreuung. Alle Fragen beziehen sich auf den gewählten Monat.",
     "monat": {

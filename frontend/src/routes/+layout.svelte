@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { texte } from '#lib/darstellung.js';
 	import futuresociety from '#lib/assets/logos/futuresociety.svg';
+	import unisg from '#lib/assets/logos/unisg.svg';
 
 	let { children } = $props();
 
@@ -49,6 +50,11 @@
 	<div class="inhalt">
 		<p>{texte.projekt.herkunft} {texte.projekt.hinweis}</p>
 		<ul class="logos" aria-label={texte.projekt.logos}>
+			<li>
+				<a href="https://www.unisg.ch/">
+					<img class="unisg" src={unisg} alt="Universität St.Gallen (HSG)" />
+				</a>
+			</li>
 			<li>
 				<!-- Logo wie auf legalhackathons.org: §-Quadrat und Schriftzug -->
 				<a class="legal-hackathon" href="https://legalhackathons.org/">
@@ -192,6 +198,11 @@
 	.logos img {
 		height: 2.5rem;
 		width: auto;
+	}
+
+	/* Breites Logo mit Schriftzug: etwas niedriger, damit es nicht dominiert */
+	.logos img.unisg {
+		height: 2rem;
 	}
 
 	.legal-hackathon {

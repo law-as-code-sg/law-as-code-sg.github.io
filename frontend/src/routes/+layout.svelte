@@ -21,9 +21,15 @@
 </svelte:head>
 
 <!-- Auf jeder Seite: studentisches Projekt, Testversion, nicht offiziell -->
-<p class="hinweis" role="note">
-	<span class="inhalt">{texte.projekt.hinweis}</span>
-</p>
+<aside class="hinweis" aria-label={texte.projekt.banner_marke}>
+	<div class="inhalt">
+		<strong class="marke">{texte.projekt.banner_marke}</strong>
+		<div>
+			<p class="titel">{texte.projekt.banner_titel}</p>
+			<p>{texte.projekt.banner_text}</p>
+		</div>
+	</div>
+</aside>
 
 <header>
 	<div class="inhalt">
@@ -90,19 +96,58 @@
 		padding-top: 1.5rem;
 	}
 
-	/* Hinweisband ganz oben: nicht offiziell, Testversion */
+	/* Hinweisband ganz oben: Testversion, nicht offiziell. Bewusst auffällig
+	   (Gelb wie ein Warnhinweis, Streifen unten), damit es niemand übersieht. */
 	.hinweis {
-		margin: 0;
-		padding: 0.5rem 0;
-		background: var(--secondary);
-		border-bottom: 1px solid var(--border);
-		color: var(--foreground);
-		font-size: var(--text-xs);
-		line-height: 1.125rem;
+		background: #ffd84d;
+		color: #1a1400;
+		padding: 0.875rem 0 calc(0.875rem + 6px);
+		background-image: repeating-linear-gradient(
+			-45deg,
+			#1a1400 0 10px,
+			#ffd84d 10px 20px
+		);
+		background-size: 100% 6px;
+		background-repeat: no-repeat;
+		background-position: bottom;
 	}
 
 	.hinweis .inhalt {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem 1rem;
+	}
+
+	.hinweis p {
+		margin: 0;
+		font-size: var(--text-sm);
+		line-height: 1.25rem;
+	}
+
+	.hinweis .titel {
+		font-size: var(--text-base);
+		font-weight: 700;
+		line-height: 1.375rem;
+	}
+
+	.marke {
+		flex-shrink: 0;
+		padding: 0.375rem 0.75rem;
+		border-radius: var(--radius-md);
+		background: #1a1400;
+		color: #ffd84d;
+		font-size: var(--text-sm);
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	/* Schmale Bildschirme: Marke über dem Text */
+	@media (max-width: 30rem) {
+		.hinweis .inhalt {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 	}
 
 	header h1 {

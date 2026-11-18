@@ -72,6 +72,9 @@
   },
   "projekt": {
     "label": "Testversion · Studentisches Projekt",
+    "banner_marke": "Testversion",
+    "banner_titel": "Studentisches Projekt – kein offizielles Angebot des Kantons St. Gallen",
+    "banner_text": "Geschlossener Demonstrator, vom Kanton weder herausgegeben noch unterstützt. Ergebnisse sind unverbindliche Schätzungen ohne Rechtswirkung.",
     "hinweis": "Testversion (geschlossener Demonstrator) eines studentischen Projekts. Kein offizielles Angebot des Kantons St. Gallen und von ihm weder herausgegeben noch unterstützt. Ergebnisse sind unverbindliche Schätzungen ohne Rechtswirkung.",
     "herkunft": "Entwickelt vom studentischen Team Ctrl+Alt+Elite am Legal Hackathon 2026 der Universität St. Gallen (legalhackathons.org).",
     "logos": "Universität St.Gallen, Legal Hackathon und Future Society Hub"
